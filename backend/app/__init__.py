@@ -1,0 +1,1 @@
+"""Decode AI API application."""
