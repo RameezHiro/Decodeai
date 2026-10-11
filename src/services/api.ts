@@ -2,6 +2,13 @@ import type { Explanation, LearningLevel, QuizResponse } from '../types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
 
+function requireApiBase(): string {
+  if (!API_BASE_URL && import.meta.env.PROD) {
+    throw new ApiError('The app was built without VITE_API_BASE_URL, so it cannot reach the API. Rebuild with the backend URL set.')
+  }
+  return API_BASE_URL
+}
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status?: number) {
     super(message)
@@ -39,7 +46,7 @@ async function postImage<T>(path: string, image: File, question: string, level: 
 
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, { method: 'POST', body: form })
+    response = await fetch(`${requireApiBase()}${path}`, { method: 'POST', body: form })
   } catch {
     throw new ApiError('Could not reach the Decode AI API. Check that the backend is running and the API URL is correct.')
   }
@@ -108,7 +115,7 @@ function parseQuiz(value: unknown): QuizResponse {
 export async function checkHealth(): Promise<boolean> {
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}/api/health`)
+    response = await fetch(`${requireApiBase()}/api/health`)
   } catch {
     return false
   }
